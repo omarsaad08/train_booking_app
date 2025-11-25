@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart' as image_gallery_saver;
+import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class BookingConfirmation extends StatefulWidget {
   final int userId;
@@ -32,29 +34,23 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
       final image = await _screenshotController.capture();
 
       if (image != null) {
-        // Save the image bytes directly to gallery
-        final result = await image_gallery_saver.ImageGallerySaver.saveImage(
-          image,
-          quality: 100,
-          name: 'ticket_${DateTime.now().millisecondsSinceEpoch}',
-        );
-
+        // Save the image to gallery using gal package
+        // gal.putImage expects a file path as String
+        final tempDir = await getTemporaryDirectory();
+        final imagePath = '${tempDir.path}/ticket_${DateTime.now().millisecondsSinceEpoch}.png';
+        
+        final imageFile = File(imagePath);
+        await imageFile.writeAsBytes(image);
+        
+        await Gal.putImage(imagePath);
+        
         if (mounted) {
-          if (result['isSuccess'] == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('تم حفظ التذكرة في المعرض'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('فشل حفظ التذكرة'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم حفظ التذكرة في المعرض'),
+              backgroundColor: Colors.green,
+            ),
+          );
         }
       }
     } catch (e) {
