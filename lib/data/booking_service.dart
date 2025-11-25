@@ -37,6 +37,15 @@ class BookingService {
     }
   }
 
+  Future<Response> getUserBookings(int userId) async {
+    try {
+      final response = await _dio.get('/bookings?user_id=$userId');
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<Response> createSchedule({
     required String fromCity,
     required String toCity,

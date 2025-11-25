@@ -3,6 +3,8 @@ import 'package:train_booking/presentation/screens/auth/login.dart';
 import 'package:train_booking/presentation/screens/auth/signup.dart';
 import 'package:train_booking/presentation/screens/base/home.dart';
 import 'package:train_booking/presentation/screens/base/booking_confirmation.dart';
+import 'package:train_booking/presentation/screens/base/bookings_list.dart';
+import 'package:train_booking/presentation/screens/base/profile.dart';
 
 class AppRouter {
   Route? generateRoute(RouteSettings settings) {
@@ -13,6 +15,10 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const Signup());
       case 'home':
         return MaterialPageRoute(builder: (_) => const Home());
+      case 'bookings_list':
+        return MaterialPageRoute(builder: (_) => const BookingsList());
+      case 'profile':
+        return MaterialPageRoute(builder: (_) => const Profile());
       case 'booking_confirmation':
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(

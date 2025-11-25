@@ -4,6 +4,7 @@ import 'package:gal/gal.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:train_booking/config/app_theme.dart';
 
 class BookingConfirmation extends StatefulWidget {
   final int userId;
@@ -72,7 +73,7 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -82,13 +83,13 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.green.shade100,
+                color: AppTheme.successColor.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Icon(
                   Icons.check_circle,
-                  color: Colors.green.shade700,
+                  color: AppTheme.successColor,
                   size: 60,
                 ),
               ),
@@ -97,11 +98,7 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
             // Success message
             Text(
               'تم إنشاء الحجز بنجاح!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
-              ),
+              style: AppTheme.headline2.copyWith(color: AppTheme.primaryColor),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
@@ -114,32 +111,39 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
             // Export button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: ElevatedButton.icon(
-                onPressed: _isExporting ? null : _exportTicket,
-                icon: _isExporting
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Icon(Icons.download),
-                label: Text(
-                  _isExporting ? 'جاري التصدير...' : 'تصدير التذكرة',
-                  style: const TextStyle(fontSize: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: AppTheme.primaryGradient,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade700,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 15,
+                child: ElevatedButton.icon(
+                  onPressed: _isExporting ? null : _exportTicket,
+                  icon: _isExporting
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(Icons.download),
+                  label: Text(
+                    _isExporting ? 'جاري التصدير...' : 'تصدير التذكرة',
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    shadowColor: Colors.transparent,
                   ),
                 ),
               ),
@@ -156,8 +160,8 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blue.shade700,
-                  side: BorderSide(color: Colors.blue.shade700),
+                  foregroundColor: AppTheme.primaryColor,
+                  side: BorderSide(color: AppTheme.primaryColor),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 30,
                     vertical: 15,
@@ -182,25 +186,20 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
     try {
       final dateTime = DateTime.parse(widget.scheduleTime);
       final formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
-      final formattedTime = DateFormat('HH:mm').format(dateTime);
+      final timeInHours = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:00';
+      final formattedTime = AppTheme.convertTo12HourFormat(timeInHours);
 
     return Container(
       width: 300,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.surfaceColor,
         border: Border.all(
-          color: Colors.blue.shade700,
+          color: AppTheme.primaryColor,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        boxShadow: AppTheme.elevatedShadow,
       ),
       child: Column(
         children: [
@@ -209,7 +208,7 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.blue.shade700,
+              gradient: AppTheme.primaryGradient,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 topRight: Radius.circular(10),
@@ -257,14 +256,12 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
                 Container(
                   width: double.infinity,
                   height: 1,
-                  color: Colors.grey.shade300,
+                  color: AppTheme.dividerColor,
                 ),
                 const SizedBox(height: 20),
                 Text(
                   'شكراً لاختيارك خدماتنا',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  style: AppTheme.body2.copyWith(
                     fontStyle: FontStyle.italic,
                   ),
                   textAlign: TextAlign.right,
@@ -288,16 +285,13 @@ class _BookingConfirmationState extends State<BookingConfirmation> {
       children: [
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 14,
+          style: AppTheme.body1.copyWith(
             fontWeight: FontWeight.w500,
           ),
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade600,
+          style: AppTheme.body2.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),

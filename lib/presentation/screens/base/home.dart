@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:train_booking/data/booking_service.dart';
 import 'package:train_booking/data/token_storage.dart';
 import 'package:train_booking/presentation/components/custom_button.dart';
+import 'package:train_booking/config/app_theme.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -154,25 +155,50 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppTheme.primaryColor,
         title: const Text('حجز القطار', style: TextStyle(color: Colors.white)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () => Navigator.pushNamed(context, 'profile'),
+            tooltip: 'الملف الشخصي',
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // View Bookings Button
+            Container(
+              decoration: BoxDecoration(
+                gradient: AppTheme.accentGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, 'bookings_list'),
+                icon: const Icon(Icons.history),
+                label: const Text('حجوزاتي'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  shadowColor: Colors.transparent,
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
             Text(
               'اختر وجهتك',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
-              ),
+              style: AppTheme.headline2.copyWith(color: AppTheme.primaryColor),
             ),
             const SizedBox(height: 30),
 
@@ -206,72 +232,85 @@ class _HomeState extends State<Home> {
             if (_selectedFromCity != null && _selectedToCity != null) ...[
               Text(
                 'اختر موعد الرحلة',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade900,
-                ),
+                style: AppTheme.headline3.copyWith(color: AppTheme.primaryColor),
               ),
-              const SizedBox(height: 15),
-              ..._timeSlots.asMap().entries.map((entry) {
-                final index = entry.key;
-                final timeSlot = entry.value;
-                final isSelected = _selectedTimeSlotIndex == index;
+              const SizedBox(height: 20),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.2,
+                ),
+                itemCount: _timeSlots.length,
+                itemBuilder: (context, index) {
+                  final timeSlot = _timeSlots[index];
+                  final isSelected = _selectedTimeSlotIndex == index;
 
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedTimeSlotIndex = index;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade50 : Colors.white,
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.blue.shade700
-                            : Colors.blue.shade200,
-                        width: isSelected ? 2 : 1,
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedTimeSlotIndex = index;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primaryColor : AppTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: AppTheme.cardShadow,
+                        border: isSelected
+                            ? Border.all(color: AppTheme.primaryColor, width: 2)
+                            : Border.all(color: AppTheme.dividerColor, width: 1),
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              timeSlot['label']!,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.blue.shade900,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  timeSlot['label']!,
+                                  textAlign: TextAlign.center,
+                                  style: AppTheme.headline3.copyWith(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppTheme.primaryColor,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  AppTheme.convertTo12HourFormat(timeSlot['departure']!),
+                                  textAlign: TextAlign.center,
+                                  style: AppTheme.subtitle2.copyWith(
+                                    color: isSelected
+                                        ? Colors.white70
+                                        : AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 5),
-                            Text(
-                              'المغادرة: ${timeSlot['departure']} - الوصول: ${timeSlot['arrival']}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (isSelected)
-                          Icon(
-                            Icons.check_circle,
-                            color: Colors.blue.shade700,
-                            size: 30,
                           ),
-                      ],
+                          if (isSelected)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                },
+              ),
               const SizedBox(height: 30),
               CustomButton(
                 text: 'تأكيد الحجز',
@@ -296,18 +335,14 @@ class _HomeState extends State<Home> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.blue.shade900,
-          ),
+          style: AppTheme.subtitle1.copyWith(color: AppTheme.primaryColor),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.blue.shade200),
+            color: AppTheme.surfaceColor,
+            border: Border.all(color: AppTheme.dividerColor),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
@@ -315,10 +350,10 @@ class _HomeState extends State<Home> {
               value: value,
               hint: Text(
                 'اختر $label',
-                style: TextStyle(color: Colors.grey.shade500),
+                style: AppTheme.body2.copyWith(color: AppTheme.textSecondary),
               ),
               isExpanded: true,
-              icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
+              icon: Icon(Icons.arrow_drop_down, color: AppTheme.primaryColor),
               items: items.map((String item) {
                 return DropdownMenuItem<String>(value: item, child: Text(item));
               }).toList(),

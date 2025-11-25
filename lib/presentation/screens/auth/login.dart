@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:train_booking/data/auth_service.dart';
+import 'package:train_booking/config/app_theme.dart';
 import 'package:train_booking/presentation/components/custom_button.dart';
 import 'package:train_booking/presentation/components/custom_text_field.dart';
 
@@ -74,34 +75,47 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
-                Icon(Icons.train, size: 100, color: Colors.blue.shade700),
-                const SizedBox(height: 20),
+                const SizedBox(height: 40),
+                // Gradient Logo Container
+                Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.train,
+                      size: 80,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                // Main Title
                 Text(
                   'مرحباً بك مجدداً',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue.shade900,
-                  ),
+                  style: AppTheme.headline1.copyWith(color: AppTheme.primaryColor),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                // Subtitle
                 Text(
                   'سجل الدخول لحجز رحلتك القادمة',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                  style: AppTheme.subtitle2.copyWith(color: AppTheme.textSecondary),
                 ),
                 const SizedBox(height: 40),
+                // Email Field
                 CustomTextField(
                   controller: _emailController,
                   hintText: 'البريد الإلكتروني',
@@ -115,6 +129,7 @@ class _LoginState extends State<Login> {
                   },
                 ),
                 const SizedBox(height: 20),
+                // Password Field
                 CustomTextField(
                   controller: _passwordController,
                   hintText: 'كلمة المرور',
@@ -128,24 +143,38 @@ class _LoginState extends State<Login> {
                   },
                 ),
                 const SizedBox(height: 40),
-                CustomButton(
-                  text: 'تسجيل الدخول',
-                  onPressed: _login,
-                  isLoading: _isLoading,
+                // Login Button with Gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: CustomButton(
+                    text: 'تسجيل الدخول',
+                    onPressed: _login,
+                    isLoading: _isLoading,
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
+                // Sign Up Link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       'ليس لديك حساب؟',
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: AppTheme.body2.copyWith(color: AppTheme.textSecondary),
                     ),
                     TextButton(
                       onPressed: () {
                         Navigator.pushNamed(context, 'signup');
                       },
-                      child: const Text('إنشاء حساب'),
+                      child: Text(
+                        'إنشاء حساب',
+                        style: AppTheme.body1.copyWith(
+                          color: AppTheme.accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ],
                 ),
