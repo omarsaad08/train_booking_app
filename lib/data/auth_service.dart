@@ -8,13 +8,13 @@ class AuthService {
   AuthService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: 'http://192.168.1.218:8080',
+        baseUrl: 'https://a38b964fe34e.ngrok-free.app',
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
       ),
     );
 
-    // Add interceptor to attach Authorization header
+    // Add interceptor with debug logging
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
@@ -25,7 +25,31 @@ class AuthService {
               options.headers['Authorization'] = 'Bearer $token';
             }
           }
+          
+          // Debug logging for request
+          debugLog('📤 REQUEST: ${options.method} ${options.baseUrl}${options.path}');
+          debugLog('Headers: ${options.headers}');
+          if (options.data != null) {
+            debugLog('Request Data: ${options.data}');
+          }
+          
           handler.next(options);
+        },
+        onResponse: (response, handler) {
+          // Debug logging for response
+          debugLog('✅ RESPONSE: ${response.statusCode}');
+          debugLog('Response Data: ${response.data}');
+          handler.next(response);
+        },
+        onError: (e, handler) {
+          // Debug logging for errors
+          debugLog('❌ ERROR: ${e.type}');
+          debugLog('Message: ${e.message}');
+          if (e.response != null) {
+            debugLog('Response Status: ${e.response?.statusCode}');
+            debugLog('Response Data: ${e.response?.data}');
+          }
+          handler.next(e);
         },
       ),
     );
@@ -33,6 +57,9 @@ class AuthService {
 
   Future<Response> login(String email, String password) async {
     try {
+      debugLog('\n🔓 LOGIN START');
+      debugLog('Email: $email');
+      
       final response = await _dio.post(
         '/login',
         data: {'email': email, 'password': password},
@@ -43,23 +70,31 @@ class AuthService {
         final token = response.data['token'];
         if (token != null) {
           await _tokenStorage.saveToken(token);
+          debugLog('✅ Token saved');
         }
         final userId = response.data['user_id'];
         if (userId != null) {
           await _tokenStorage.saveUserId(
             userId is int ? userId : int.parse(userId.toString()),
           );
+          debugLog('✅ User ID saved: $userId');
         }
       }
 
+      debugLog('Login completed successfully');
       return response;
     } catch (e) {
+      debugLog('Login failed: $e');
       rethrow;
     }
   }
 
   Future<Response> signup(String name, String email, String password) async {
     try {
+      debugLog('\n🔐 SIGNUP START');
+      debugLog('Name: $name');
+      debugLog('Email: $email');
+      
       final response = await _dio.post(
         '/signup',
         data: {'name': name, 'email': email, 'password': password},
@@ -71,22 +106,33 @@ class AuthService {
         final token = response.data['token'];
         if (token != null) {
           await _tokenStorage.saveToken(token);
+          debugLog('✅ Token saved');
         }
         final userId = response.data['user_id'];
         if (userId != null) {
           await _tokenStorage.saveUserId(
             userId is int ? userId : int.parse(userId.toString()),
           );
+          debugLog('✅ User ID saved: $userId');
         }
       }
 
+      debugLog('Signup completed successfully');
       return response;
     } catch (e) {
+      debugLog('Signup failed: $e');
       rethrow;
     }
   }
 
   Future<void> logout() async {
+    debugLog('\n🔑 LOGOUT');
     await _tokenStorage.clearAll();
+    debugLog('Cleared all stored credentials');
+  }
+
+  void debugLog(String message) {
+    print('[AuthService] $message');
   }
 }
+

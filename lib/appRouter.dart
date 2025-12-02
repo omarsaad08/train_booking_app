@@ -5,6 +5,7 @@ import 'package:train_booking/presentation/screens/base/home.dart';
 import 'package:train_booking/presentation/screens/base/booking_confirmation.dart';
 import 'package:train_booking/presentation/screens/base/bookings_list.dart';
 import 'package:train_booking/presentation/screens/base/profile.dart';
+import 'package:train_booking/presentation/screens/base/booking_images.dart';
 
 class AppRouter {
   Route? generateRoute(RouteSettings settings) {
@@ -27,6 +28,15 @@ class AppRouter {
             fromCity: args['fromCity'] as String,
             toCity: args['toCity'] as String,
             scheduleTime: args['scheduleTime'] as String,
+          ),
+        );
+      case 'booking_images':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => BookingImagesScreen(
+            bookingId: args['bookingId'] as int,
+            fromCity: args['fromCity'] as String,
+            toCity: args['toCity'] as String,
           ),
         );
 

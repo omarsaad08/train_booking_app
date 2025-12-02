@@ -322,6 +322,41 @@ class _BookingsListState extends State<BookingsList> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              // View/Upload Images Button
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.accentGradient,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        'booking_images',
+                        arguments: {
+                          'bookingId': booking['id'],
+                          'fromCity': fromCity,
+                          'toCity': toCity,
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.image),
+                    label: const Text('صور الرحلة'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      shadowColor: Colors.transparent,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

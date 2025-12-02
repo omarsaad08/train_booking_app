@@ -18,6 +18,8 @@ class _LoginState extends State<Login> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  String? _errorMessage;
+  bool _showPassword = false;
 
   @override
   void dispose() {
@@ -26,15 +28,53 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+  String _getErrorMessage(DioException e) {
+    // Check for specific error responses from backend
+    if (e.response != null) {
+      final data = e.response?.data;
+      final message = data is Map ? data['message'] ?? data['error'] : null;
+
+      switch (e.response?.statusCode) {
+        case 401:
+          if (message != null) return message.toString();
+          return 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+        case 404:
+          return 'الحساب غير موجود. يرجى التحقق من البريد الإلكتروني';
+        case 400:
+          if (message != null) return message.toString();
+          return 'بيانات غير صحيحة. يرجى التحقق من المدخلات';
+        case 500:
+          return 'خطأ في الخادم. يرجى المحاولة لاحقاً';
+        default:
+          return message?.toString() ?? 'فشل تسجيل الدخول';
+      }
+    }
+
+    // Network errors
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'انتهت مهلة الاتصال. تحقق من اتصالك بالإنترنت';
+      case DioExceptionType.receiveTimeout:
+        return 'انتهت مهلة استقبال البيانات. حاول مجددا';
+      case DioExceptionType.badResponse:
+        return 'حدث خطأ في الاتصال. يرجى المحاولة لاحقاً';
+      case DioExceptionType.unknown:
+        return 'خطأ في الاتصال. تحقق من اتصالك بالإنترنت';
+      default:
+        return 'خطأ غير متوقع. يرجى المحاولة لاحقاً';
+    }
+  }
+
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
+        _errorMessage = null;
       });
 
       try {
         final response = await _authService.login(
-          _emailController.text,
+          _emailController.text.trim(),
           _passwordController.text,
         );
 
@@ -43,24 +83,23 @@ class _LoginState extends State<Login> {
             // Navigate to home on success
             Navigator.pushReplacementNamed(context, 'home');
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('فشل تسجيل الدخول: ${response.statusMessage}'),
-              ),
-            );
+            setState(() {
+              _errorMessage = response.data['message'] ?? 'فشل تسجيل الدخول';
+            });
           }
         }
       } on DioException catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('خطأ في الاتصال: ${e.message}')),
-          );
+          final errorMsg = _getErrorMessage(e);
+          setState(() {
+            _errorMessage = errorMsg;
+          });
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('حدث خطأ غير متوقع')));
+          setState(() {
+            _errorMessage = 'حدث خطأ غير متوقع. يرجى المحاولة لاحقاً';
+          });
         }
       } finally {
         if (mounted) {
@@ -93,11 +132,7 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.train,
-                      size: 80,
-                      color: Colors.white,
-                    ),
+                    child: Icon(Icons.train, size: 80, color: Colors.white),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -105,16 +140,46 @@ class _LoginState extends State<Login> {
                 Text(
                   'مرحباً بك مجدداً',
                   textAlign: TextAlign.center,
-                  style: AppTheme.headline1.copyWith(color: AppTheme.primaryColor),
+                  style: AppTheme.headline1.copyWith(
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 // Subtitle
                 Text(
                   'سجل الدخول لحجز رحلتك القادمة',
                   textAlign: TextAlign.center,
-                  style: AppTheme.subtitle2.copyWith(color: AppTheme.textSecondary),
+                  style: AppTheme.subtitle2.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 40),
+                // Error Message Display
+                if (_errorMessage != null)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.errorColor.withOpacity(0.1),
+                      border: Border.all(color: AppTheme.errorColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: AppTheme.errorColor),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _errorMessage!,
+                            style: AppTheme.body2.copyWith(
+                              color: AppTheme.errorColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_errorMessage != null) const SizedBox(height: 20),
                 // Email Field
                 CustomTextField(
                   controller: _emailController,
@@ -125,6 +190,9 @@ class _LoginState extends State<Login> {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال البريد الإلكتروني';
                     }
+                    if (!value.contains('@')) {
+                      return 'يرجى إدخال بريد إلكتروني صحيح';
+                    }
                     return null;
                   },
                 ),
@@ -134,7 +202,17 @@ class _LoginState extends State<Login> {
                   controller: _passwordController,
                   hintText: 'كلمة المرور',
                   prefixIcon: Icons.lock_outline,
-                  obscureText: true,
+                  obscureText: !_showPassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _showPassword ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _showPassword = !_showPassword;
+                      });
+                    },
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'الرجاء إدخال كلمة المرور';
@@ -162,7 +240,9 @@ class _LoginState extends State<Login> {
                   children: [
                     Text(
                       'ليس لديك حساب؟',
-                      style: AppTheme.body2.copyWith(color: AppTheme.textSecondary),
+                      style: AppTheme.body2.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
