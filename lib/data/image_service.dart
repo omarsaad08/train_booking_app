@@ -6,11 +6,11 @@ import 'dart:io';
 class ImageService {
   final Dio _dio;
   final TokenStorage _tokenStorage = TokenStorage();
-  final String _baseUrl = 'https://a38b964fe34e.ngrok-free.app';
+  final String _baseUrl = 'https://4c1f348971bc.ngrok-free.app';
 
   ImageService() : _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://a38b964fe34e.ngrok-free.app',
+      baseUrl: 'https://4c1f348971bc.ngrok-free.app',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 30),
       sendTimeout: const Duration(seconds: 30),

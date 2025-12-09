@@ -8,7 +8,7 @@ class AuthService {
   AuthService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: 'https://a38b964fe34e.ngrok-free.app',
+        baseUrl: 'https://4c1f348971bc.ngrok-free.app',
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 3),
       ),
